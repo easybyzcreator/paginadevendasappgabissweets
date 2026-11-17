@@ -1,0 +1,8 @@
+{
+  "name": "Gabi´s Sweets",
+  "description": "Página oficial do App Gabi´s Sweets - Brazilian Deserts - Transforme sua confeitaria em uma operação profissional e escalável",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
