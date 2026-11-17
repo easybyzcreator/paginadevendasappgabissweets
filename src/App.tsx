@@ -240,8 +240,8 @@ export default function App() {
     };
 
     try {
-      // 1. Envia os dados para a planilha através da API com keepalive (garante entrega em background)
-      fetch('/api/submit', {
+      // 1. Envia os dados para a planilha através da API (aguarda até 2.5s para garantir entrega na Vercel)
+      const sheetsPromise = fetch('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -261,8 +261,10 @@ export default function App() {
         console.warn('Aviso ao registrar no Firestore:', dbError);
       }
 
-      // Pequena pausa de 300ms apenas para despacho das conexões de rede e redireciona direto
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      await Promise.race([
+        sheetsPromise,
+        new Promise((resolve) => setTimeout(resolve, 2500))
+      ]);
       window.location.href = targetUrl;
 
     } catch (error) {
