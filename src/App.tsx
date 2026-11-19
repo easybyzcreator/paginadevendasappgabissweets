@@ -3,274 +3,30 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
-import { db } from './firebase';
-import { collection, doc, setDoc, serverTimestamp, getCountFromServer } from 'firebase/firestore';
+import React from 'react';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { 
-  CheckCircle2, 
-  Sparkles, 
-  Phone, 
-  Mail, 
-  User, 
-  Instagram, 
-  MapPin, 
   MessageCircle,
   ShieldCheck,
   SlidersHorizontal,
   ShoppingBag,
   TrendingUp,
-  CreditCard,
-  CalendarCheck,
   Quote,
   Star,
   ArrowDown,
   Clock
 } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-
-const ESTADOS_EUA = [
-  { sigla: 'AL', nome: 'Alabama (AL)' },
-  { sigla: 'AK', nome: 'Alaska (AK)' },
-  { sigla: 'AZ', nome: 'Arizona (AZ)' },
-  { sigla: 'AR', nome: 'Arkansas (AR)' },
-  { sigla: 'CA', nome: 'California (CA)' },
-  { sigla: 'CO', nome: 'Colorado (CO)' },
-  { sigla: 'CT', nome: 'Connecticut (CT)' },
-  { sigla: 'DE', nome: 'Delaware (DE)' },
-  { sigla: 'FL', nome: 'Florida (FL)' },
-  { sigla: 'GA', nome: 'Georgia (GA)' },
-  { sigla: 'HI', nome: 'Hawaii (HI)' },
-  { sigla: 'ID', nome: 'Idaho (ID)' },
-  { sigla: 'IL', nome: 'Illinois (IL)' },
-  { sigla: 'IN', nome: 'Indiana (IN)' },
-  { sigla: 'IA', nome: 'Iowa (IA)' },
-  { sigla: 'KS', nome: 'Kansas (KS)' },
-  { sigla: 'KY', nome: 'Kentucky (KY)' },
-  { sigla: 'LA', nome: 'Louisiana (LA)' },
-  { sigla: 'ME', nome: 'Maine (ME)' },
-  { sigla: 'MD', nome: 'Maryland (MD)' },
-  { sigla: 'MA', nome: 'Massachusetts (MA)' },
-  { sigla: 'MI', nome: 'Michigan (MI)' },
-  { sigla: 'MN', nome: 'Minnesota (MN)' },
-  { sigla: 'MS', nome: 'Mississippi (MS)' },
-  { sigla: 'MO', nome: 'Missouri (MO)' },
-  { sigla: 'MT', nome: 'Montana (MT)' },
-  { sigla: 'NE', nome: 'Nebraska (NE)' },
-  { sigla: 'NV', nome: 'Nevada (NV)' },
-  { sigla: 'NH', nome: 'New Hampshire (NH)' },
-  { sigla: 'NJ', nome: 'New Jersey (NJ)' },
-  { sigla: 'NM', nome: 'New Mexico (NM)' },
-  { sigla: 'NY', nome: 'New York (NY)' },
-  { sigla: 'NC', nome: 'North Carolina (NC)' },
-  { sigla: 'ND', nome: 'North Dakota (ND)' },
-  { sigla: 'OH', nome: 'Ohio (OH)' },
-  { sigla: 'OK', nome: 'Oklahoma (OK)' },
-  { sigla: 'OR', nome: 'Oregon (OR)' },
-  { sigla: 'PA', nome: 'Pennsylvania (PA)' },
-  { sigla: 'RI', nome: 'Rhode Island (RI)' },
-  { sigla: 'SC', nome: 'South Carolina (SC)' },
-  { sigla: 'SD', nome: 'South Dakota (SD)' },
-  { sigla: 'TN', nome: 'Tennessee (TN)' },
-  { sigla: 'TX', nome: 'Texas (TX)' },
-  { sigla: 'UT', nome: 'Utah (UT)' },
-  { sigla: 'VT', nome: 'Vermont (VT)' },
-  { sigla: 'VA', nome: 'Virginia (VA)' },
-  { sigla: 'WA', nome: 'Washington (WA)' },
-  { sigla: 'WV', nome: 'West Virginia (WV)' },
-  { sigla: 'WI', nome: 'Wisconsin (WI)' },
-  { sigla: 'WY', nome: 'Wyoming (WY)' },
-  { sigla: 'DC', nome: 'Washington D.C. (DC)' }
-];
 
 const EASYBYZ_WHATSAPP = '18038889018';
-// Links de pagamento do PayPal:
-const PAYPAL_PROMO_URL = 'https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-4BE36404NG7319633NL6HERI';
-const PAYPAL_REGULAR_URL = 'https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-4BE36404NG7319633NL6HERI';
+const WHATSAPP_CTA_MSG = "Olá Pati, sou aluna e/ou seguidora da Gabi´s sweets e tenho interesse em ter um app personalizado assim como o dela.";
+const WHATSAPP_CTA_URL = `https://wa.me/${EASYBYZ_WHATSAPP}?text=${encodeURIComponent(WHATSAPP_CTA_MSG)}`;
 
 const DEFAULT_SUPPORT_MSG = "Olá Pati, vim pela indicação da Gabi´s Sweets e gostaria de tirar uma dúvida sobre o aplicativo personalizado da EASY BYZ. Você pode me ajudar?";
-
-type FormData = {
-  nome: string;
-  whatsapp: string;
-  email: string;
-  instagram: string;
-  cidade: string;
-  estado: string;
-};
 
 export default function App() {
   const { scrollY } = useScroll();
   const chefY = useTransform(scrollY, [0, 600], [0, -25]);
   const phoneY = useTransform(scrollY, [0, 600], [0, -50]);
-
-  const [formData, setFormData] = useState<FormData>({
-    nome: '',
-    whatsapp: '',
-    email: '',
-    instagram: '',
-    cidade: '',
-    estado: 'FL',
-  });
-
-  const [totalInscricoes, setTotalInscricoes] = useState<number>(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    // Busca a contagem atual de inscrições registradas no Firestore
-    const fetchCount = async () => {
-      try {
-        const coll = collection(db, 'inscricoes');
-        const countSnap = await getCountFromServer(coll);
-        setTotalInscricoes(countSnap.data().count);
-      } catch (err) {
-        console.warn('Contagem inicial do Firestore:', err);
-      }
-    };
-    fetchCount();
-  }, []);
-
-  const validateEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
-
-  const maskPhone = (value: string) => {
-    let digits = value.replace(/\D/g, '');
-    if (digits.startsWith('1') && digits.length > 10) {
-      digits = digits.slice(1);
-    }
-    digits = digits.slice(0, 10);
-    if (digits.length === 0) return '';
-    if (digits.length <= 3) return `(${digits}`;
-    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    let maskedValue = value;
-
-    if (name === 'whatsapp') maskedValue = maskPhone(value);
-    if (name === 'instagram') {
-      maskedValue = value.startsWith('@') ? value : (value ? `@${value}` : '');
-    }
-
-    setFormData((prev) => ({ ...prev, [name]: maskedValue }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.nome.trim()) {
-      alert('Por favor, informe seu nome completo.');
-      return;
-    }
-
-    const phoneDigits = formData.whatsapp.replace(/\D/g, '');
-    if (!formData.whatsapp.trim() || phoneDigits.length < 10) {
-      alert('Por favor, insira um telefone dos EUA válido com DDD (10 dígitos). Ex: (555) 000-0000');
-      return;
-    }
-
-    if (!validateEmail(formData.email)) {
-      alert('Por favor, insira um e-mail válido.');
-      return;
-    }
-
-    if (!formData.instagram.trim()) {
-      alert('Por favor, insira o seu Instagram.');
-      return;
-    }
-
-    if (!formData.cidade.trim()) {
-      alert('Por favor, informe sua cidade.');
-      return;
-    }
-
-    if (!formData.estado) {
-      alert('Por favor, selecione seu estado.');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    // 1. Obtém a contagem de inscritos em tempo real no Firestore
-    let currentCount = totalInscricoes;
-    try {
-      const coll = collection(db, 'inscricoes');
-      const countSnap = await Promise.race([
-        getCountFromServer(coll),
-        new Promise<null>((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
-      ]);
-      if (countSnap) {
-        currentCount = countSnap.data().count;
-        setTotalInscricoes(currentCount);
-      }
-    } catch (err) {
-      console.warn('Usando contagem local/em memória:', err);
-    }
-
-    // Direcionamento direto para o plano (12 primeiras parcelas $107.00 + Mensalidade $63.00)
-    const proximoNumero = currentCount + 1;
-    const targetUrl = PAYPAL_REGULAR_URL;
-    const promocional = '12 primeiras parcelas ($ 107.00) + Somente Mensalidade ($ 63.00)';
-    const planoAplicado = '12 primeiras parcelas ($ 107.00) + Somente Mensalidade ($ 63.00)';
-
-    const payload = {
-      numeroInscricao: proximoNumero,
-      numero: proximoNumero,
-      inscricao: proximoNumero,
-      nome: formData.nome.trim(),
-      whatsapp: formData.whatsapp.trim(),
-      email: formData.email.trim().toLowerCase(),
-      instagram: formData.instagram.trim(),
-      cidade: formData.cidade.trim(),
-      estado: formData.estado.trim(),
-      promocional,
-      plano: promocional,
-      planoAplicado,
-      linkPagamento: targetUrl,
-      dataHora: new Date().toLocaleString('pt-BR', { timeZone: 'America/New_York' }),
-    };
-
-    try {
-      // 1. Envia os dados para a planilha através da API (aguarda até 2.5s para garantir entrega na Vercel)
-      const sheetsPromise = fetch('/api/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        keepalive: true,
-      }).catch((err) => {
-        console.error('Erro ao sincronizar com servidor/planilha:', err);
-      });
-
-      // 2. Salva no Firestore
-      try {
-        const leadRef = doc(collection(db, 'inscricoes'));
-        setDoc(leadRef, {
-          ...payload,
-          createdAt: serverTimestamp()
-        }).catch((dbError) => console.warn('Aviso ao registrar no Firestore:', dbError));
-      } catch (dbError) {
-        console.warn('Aviso ao registrar no Firestore:', dbError);
-      }
-
-      await Promise.race([
-        sheetsPromise,
-        new Promise((resolve) => setTimeout(resolve, 2500))
-      ]);
-      window.location.href = targetUrl;
-
-    } catch (error) {
-      console.error('Erro ao processar dados:', error);
-      window.location.href = targetUrl;
-    }
-  };
 
   return (
     <div className="min-h-screen bg-[#FFFFFF] font-sans text-[#0A0A0A] selection:bg-[#00E5FF] selection:text-[#0A0A0A]">
@@ -457,11 +213,13 @@ export default function App() {
             {/* Botão de Ação */}
             <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 pt-2">
               <a
-                href="#inscricao"
+                href={WHATSAPP_CTA_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="bg-[#0A0A0A] hover:bg-[#1a1a1a] text-white font-bold text-xs sm:text-sm px-6 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 uppercase tracking-wide cursor-pointer text-center border border-[#00E5FF]/40"
               >
+                <MessageCircle className="w-4 h-4 text-[#4ADE80]" />
                 <span>Garantir Meu App Agora</span>
-                <ArrowDown className="w-4 h-4 text-[#00E5FF]" />
               </a>
             </div>
           </div>
@@ -750,6 +508,19 @@ export default function App() {
                 </div>
               </div>
             </div>
+
+            {/* Botão de Ação antes dos Depoimentos */}
+            <div className="mt-10 text-center">
+              <a
+                href={WHATSAPP_CTA_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2.5 px-8 py-4 bg-[#0A0A0A] hover:bg-[#1a1a1a] text-white font-black text-base sm:text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all tracking-tight cursor-pointer border border-[#00E5FF]/40"
+              >
+                <MessageCircle className="w-5 h-5 text-[#4ADE80]" />
+                <span>Garantir Meu App Agora</span>
+              </a>
+            </div>
           </div>
 
           {/* Seção Depoimentos (4 depoimentos, sem tag) */}
@@ -832,17 +603,10 @@ export default function App() {
             </div>
           </div>
 
-          {/* Seção Investimento e Condições de Pagamento */}
+          {/* Seção Oferta Exclusiva e Botão de Ação */}
           <div id="investimento" className="text-left mb-20 sm:mb-24 scroll-mt-6">
-            <div className="text-center mb-8 sm:mb-10">
-              <h2 className="text-xl sm:text-3xl font-extrabold text-[#0A0A0A] tracking-tight">
-                Investimento e Condições de Pagamento
-              </h2>
-              <div className="w-16 h-1 bg-gradient-to-r from-[#84CC16] via-[#22C55E] to-[#00E5FF] mx-auto mt-2.5 rounded-full"></div>
-            </div>
-
             {/* Aviso de Escassez e Exclusividade */}
-            <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-[#0A0A0A] text-white border border-[#00E5FF]/40 shadow-lg flex flex-col sm:flex-row items-center justify-center gap-3 text-center sm:text-left">
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#0A0A0A] text-white border border-[#00E5FF]/40 shadow-lg flex flex-col sm:flex-row items-center justify-center gap-3 text-center sm:text-left">
               <div className="w-10 h-10 rounded-full bg-[#00E5FF]/15 border border-[#00E5FF]/40 flex items-center justify-center shrink-0">
                 <Clock className="w-5 h-5 text-[#00E5FF]" />
               </div>
@@ -856,240 +620,21 @@ export default function App() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {/* 12 primeiras parcelas */}
-              <div className="p-6 sm:p-7 bg-white rounded-3xl border-2 border-[#0A0A0A] shadow-md flex flex-col justify-between relative overflow-hidden">
-                <div className="absolute top-0 right-0 bg-[#0A0A0A] text-[#00E5FF] text-[10px] sm:text-xs font-black uppercase px-3 py-1 rounded-bl-xl tracking-wider border-l border-b border-[#00E5FF]/30">
-                  1º ANO
-                </div>
-                <div>
-                  <div className="inline-flex items-center gap-2 text-xs font-bold px-3 py-1 rounded-full bg-[#00E5FF]/10 text-[#0A0A0A] border border-[#0891B2]/30 mb-3">
-                    <CalendarCheck className="w-3.5 h-3.5 text-[#0891B2]" />
-                    <span>1º Ano • Configuração + Mensalidade</span>
-                  </div>
-                  <h3 className="text-base sm:text-lg font-bold text-[#0A0A0A]">
-                    12 primeiras parcelas
-                  </h3>
-                  <div className="my-3">
-                    <span className="text-3xl sm:text-4xl font-black text-[#0A0A0A] tracking-tight">
-                      12x de $ 107.00
-                    </span>
-                  </div>
-                </div>
-                <p className="text-xs sm:text-sm text-[#0A0A0A]/80 bg-slate-50 p-3.5 rounded-xl border border-[#0A0A0A]/12 leading-relaxed mt-2">
-                  Valor mensal durante o 1º ano (taxa de configuração do app somada à mensalidade dividida em 12 parcelas). 1ª cobrança na assinatura do contrato e as demais no mesmo dia nos meses subsequentes.
-                </p>
-              </div>
-
-              {/* Somente Mensalidade */}
-              <div className="p-6 sm:p-7 bg-white rounded-3xl border-2 border-[#0A0A0A]/30 shadow-md flex flex-col justify-between relative overflow-hidden">
-                <div className="absolute top-0 right-0 bg-[#0A0A0A] text-[#4ADE80] text-[10px] sm:text-xs font-black uppercase px-3 py-1 rounded-bl-xl tracking-wider border-l border-b border-[#4ADE80]/30">
-                  RECORRENTE
-                </div>
-                <div>
-                  <div className="inline-flex items-center gap-2 text-xs font-bold px-3 py-1 rounded-full bg-[#22C55E]/10 text-[#0A0A0A] border border-[#22C55E]/30 mb-3">
-                    <CreditCard className="w-3.5 h-3.5 text-[#15803D]" />
-                    <span>A Partir da 13ª Parcela</span>
-                  </div>
-                  <h3 className="text-base sm:text-lg font-bold text-[#0A0A0A]">
-                    Somente Mensalidade
-                  </h3>
-                  <div className="my-3">
-                    <span className="text-3xl sm:text-4xl font-black text-[#0A0A0A] tracking-tight">
-                      $ 63.00
-                    </span>
-                    <span className="text-base font-bold text-[#0891B2]">/mês</span>
-                  </div>
-                </div>
-                <p className="text-xs sm:text-sm text-[#0A0A0A]/80 bg-slate-50 p-3.5 rounded-xl border border-[#0A0A0A]/12 leading-relaxed mt-2">
-                  A partir da 13ª parcela (2º ano em diante), a configuração já está 100% quitada: você paga apenas o valor da mensalidade fixa para manutenção, servidores e suporte contínuo.
-                </p>
-              </div>
-            </div>
-
-            {/* Botão de Ação para Adquirir */}
+            {/* Botão de Ação para WhatsApp */}
             <div className="mt-8 text-center">
               <a
-                href="#inscricao"
+                href={WHATSAPP_CTA_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2.5 px-8 py-4 bg-[#0A0A0A] hover:bg-[#1a1a1a] text-white font-black text-base sm:text-lg rounded-2xl shadow-xl hover:shadow-2xl transition-all tracking-tight cursor-pointer border border-[#00E5FF]/40"
               >
-                <span>Quero Adquirir Meu App</span>
-                <ArrowDown className="w-5 h-5 text-[#00E5FF]" />
+                <MessageCircle className="w-5 h-5 text-[#4ADE80]" />
+                <span>Garantir Meu App Agora</span>
               </a>
             </div>
           </div>
 
       </section>
-
-      {/* Conteúdo Principal: Formulário de Cadastro e Direcionamento Direto */}
-      <main id="inscricao" className="max-w-3xl mx-auto px-4 sm:px-6 pb-16">
-        <div className="bg-white rounded-3xl shadow-xl border-2 border-[#0A0A0A]/20 overflow-hidden">
-          
-          {/* Header do Card de Cadastro */}
-          <div className="p-6 sm:p-8 border-b border-[#00E5FF]/20 bg-[#0A0A0A] text-white">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-[#00E5FF]/15 text-[#00E5FF] shadow-xs border border-[#00E5FF]/40">
-                <Sparkles className="w-3.5 h-3.5 text-[#4ADE80]" />
-                <span>Condição Exclusiva até 20 de Dezembro</span>
-              </div>
-            </div>
-            <h2 className="text-xl sm:text-3xl font-black text-white tracking-tight leading-snug">
-              Garanta o seu App Personalizado agora!
-            </h2>
-            <p className="text-white/85 text-sm sm:text-base mt-2 leading-relaxed">
-              Preencha os dados abaixo para iniciar a configuração do seu aplicativo sob medida com a EASY BYZ e levar sua confeitaria para o próximo nível.
-            </p>
-          </div>
-
-          {/* Formulário */}
-            <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-5">
-              
-              {/* Nome Completo */}
-              <div>
-                <label className="block text-sm font-bold text-[#0A0A0A] mb-1.5">
-                  Nome Completo *
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0891B2]" />
-                  <input
-                    required
-                    type="text"
-                    name="nome"
-                    value={formData.nome}
-                    onChange={handleChange}
-                    placeholder="Seu nome completo"
-                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-[#0A0A0A]/20 rounded-xl text-[#0A0A0A] placeholder-[#0A0A0A]/45 focus:outline-none focus:ring-2 focus:ring-[#0891B2] focus:bg-white focus:border-[#0891B2] transition-all text-sm font-medium"
-                  />
-                </div>
-              </div>
-
-              {/* WhatsApp e E-mail */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm font-bold text-[#0A0A0A] mb-1.5">
-                    Telefone / WhatsApp (EUA) *
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0891B2]" />
-                    <input
-                      required
-                      type="tel"
-                      name="whatsapp"
-                      value={formData.whatsapp}
-                      onChange={handleChange}
-                      placeholder="(555) 000-0000"
-                      className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-[#0A0A0A]/20 rounded-xl text-[#0A0A0A] placeholder-[#0A0A0A]/45 focus:outline-none focus:ring-2 focus:ring-[#0891B2] focus:bg-white focus:border-[#0891B2] transition-all text-sm font-medium"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-[#0A0A0A] mb-1.5">
-                    E-mail *
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0891B2]" />
-                    <input
-                      required
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="seuemail@exemplo.com"
-                      className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-[#0A0A0A]/20 rounded-xl text-[#0A0A0A] placeholder-[#0A0A0A]/45 focus:outline-none focus:ring-2 focus:ring-[#0891B2] focus:bg-white focus:border-[#0891B2] transition-all text-sm font-medium"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Instagram */}
-              <div>
-                <label className="block text-sm font-bold text-[#0A0A0A] mb-1.5">
-                  Instagram da sua confeitaria / pessoal *
-                </label>
-                <div className="relative">
-                  <Instagram className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0891B2]" />
-                  <input
-                    required
-                    type="text"
-                    name="instagram"
-                    value={formData.instagram}
-                    onChange={handleChange}
-                    placeholder="@seuperfil"
-                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-[#0A0A0A]/20 rounded-xl text-[#0A0A0A] placeholder-[#0A0A0A]/45 focus:outline-none focus:ring-2 focus:ring-[#0891B2] focus:bg-white focus:border-[#0891B2] transition-all text-sm font-medium"
-                  />
-                </div>
-              </div>
-
-              {/* Cidade e Estado dos EUA */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-bold text-[#0A0A0A] mb-1.5">
-                    Cidade (EUA) *
-                  </label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0891B2]" />
-                    <input
-                      required
-                      type="text"
-                      name="cidade"
-                      value={formData.cidade}
-                      onChange={handleChange}
-                      placeholder="Ex: Orlando, Miami, Boston, Newark..."
-                      className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-[#0A0A0A]/20 rounded-xl text-[#0A0A0A] placeholder-[#0A0A0A]/45 focus:outline-none focus:ring-2 focus:ring-[#0891B2] focus:bg-white focus:border-[#0891B2] transition-all text-sm font-medium"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-[#0A0A0A] mb-1.5">
-                    Estado (EUA) *
-                  </label>
-                  <select
-                    required
-                    name="estado"
-                    value={formData.estado}
-                    onChange={handleChange}
-                    className="w-full px-3 py-3.5 bg-slate-50 border border-[#0A0A0A]/20 rounded-xl text-[#0A0A0A] focus:outline-none focus:ring-2 focus:ring-[#0891B2] focus:bg-white focus:border-[#0891B2] transition-all text-sm font-bold cursor-pointer"
-                  >
-                    {ESTADOS_EUA.map((item) => (
-                      <option key={item.sigla} value={item.sigla} className="bg-white text-[#0A0A0A]">
-                        {item.nome}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Botão de Envio */}
-              <div className="pt-4">
-                <button
-                  id="btn-submit-lead"
-                  disabled={isSubmitting}
-                  type="submit"
-                  className={cn(
-                    "w-full py-4 px-6 bg-[#0A0A0A] hover:bg-[#1a1a1a] text-white font-black text-lg sm:text-xl rounded-xl transition-all shadow-xl hover:shadow-2xl flex items-center justify-center gap-3 tracking-tight cursor-pointer border border-[#00E5FF]/40",
-                    isSubmitting && "opacity-80 cursor-not-allowed"
-                  )}
-                >
-                  {isSubmitting ? (
-                    <div className="flex items-center justify-center gap-2.5">
-                      <div className="w-5 h-5 border-2 border-[#00E5FF] border-t-transparent rounded-full animate-spin"></div>
-                      <span>Processando inscrição...</span>
-                    </div>
-                  ) : (
-                    <span>Garantir meu App Personalizado agora</span>
-                  )}
-                </button>
-
-                <div className="flex items-center justify-center gap-2 text-center text-[#0A0A0A]/65 text-xs mt-3.5">
-                  <span>🔒 Seus dados estão seguros e criptografados.</span>
-                </div>
-              </div>
-
-            </form>
-          </div>
-      </main>
 
       {/* Footer com Identidade EASY BYZ CREATOR */}
       <footer className="border-t border-[#00E5FF]/30 bg-[#0A0A0A] py-12 px-4 text-white text-center text-sm">
