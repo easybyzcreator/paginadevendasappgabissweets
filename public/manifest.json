@@ -1,11 +1,11 @@
 {
-  "name": "Gabi´s Sweets",
-  "short_name": "Gabi´s Sweets",
-  "description": "App Oficial Gabi´s Sweets",
+  "name": "EASY BYZ Creator - App Personalizado",
+  "short_name": "EASY BYZ",
+  "description": "Aplicativo Personalizado EASY BYZ Creator",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FFFFFF",
-  "theme_color": "#E9A7B6",
+  "theme_color": "#0A0A0A",
   "icons": [
     {
       "src": "https://raw.githubusercontent.com/easybyzcreator/imagens/c0a4d31d6e45e9b8a82d87e8535bfe3d5ecfa656/gabis%20sweets.png",
