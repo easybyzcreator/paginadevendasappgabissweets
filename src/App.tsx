@@ -14,7 +14,8 @@ import {
   Quote,
   Star,
   ArrowDown,
-  Clock
+  Clock,
+  Calculator
 } from 'lucide-react';
 
 const EASYBYZ_WHATSAPP = '18038889018';
@@ -239,9 +240,9 @@ export default function App() {
               <div className="w-16 h-1 bg-gradient-to-r from-[#84CC16] via-[#22C55E] to-[#00E5FF] mx-auto mt-2.5 rounded-full"></div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
               {/* Benefício 1 */}
-              <div className="p-4 sm:p-5 lg:p-3 xl:p-4 bg-white rounded-2xl border border-[#0A0A0A]/15 shadow-sm hover:shadow-md hover:border-[#0891B2]/50 transition-all flex flex-col justify-center items-center text-center aspect-auto lg:aspect-square">
+              <div className="h-full p-4 sm:p-5 lg:p-3.5 xl:p-4 bg-white rounded-2xl border border-[#0A0A0A]/15 shadow-sm hover:shadow-md hover:border-[#0891B2]/50 transition-all flex flex-col justify-center items-center text-center">
                 <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#0A0A0A] text-[#00E5FF] flex items-center justify-center shrink-0 mb-2 sm:mb-2.5">
                   <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-[#00E5FF]" />
                 </div>
@@ -253,8 +254,21 @@ export default function App() {
                 </p>
               </div>
 
+              {/* Benefício Destaque: Precificação Inteligente */}
+              <div className="h-full p-4 sm:p-5 lg:p-3.5 xl:p-4 bg-[#0A0A0A] rounded-2xl border-2 border-[#00E5FF]/60 shadow-lg hover:shadow-xl hover:border-[#00E5FF] transition-all flex flex-col justify-center items-center text-center">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#00E5FF]/15 border border-[#00E5FF]/40 text-[#4ADE80] flex items-center justify-center shrink-0 mb-2 sm:mb-2.5">
+                  <Calculator className="w-4 h-4 sm:w-5 sm:h-5 text-[#4ADE80]" />
+                </div>
+                <h3 className="font-bold text-sm sm:text-base text-white leading-snug mb-1">
+                  Precificação inteligente
+                </h3>
+                <p className="text-xs sm:text-[13px] text-white/85 leading-snug">
+                  Nunca mais venda pelo preço errado: o app calcula seus custos automaticamente e mostra exatamente o lucro de cada produto.
+                </p>
+              </div>
+
               {/* Benefício 2 */}
-              <div className="p-4 sm:p-5 lg:p-3 xl:p-4 bg-white rounded-2xl border border-[#0A0A0A]/15 shadow-sm hover:shadow-md hover:border-[#0891B2]/50 transition-all flex flex-col justify-center items-center text-center aspect-auto lg:aspect-square">
+              <div className="h-full p-4 sm:p-5 lg:p-3.5 xl:p-4 bg-white rounded-2xl border border-[#0A0A0A]/15 shadow-sm hover:shadow-md hover:border-[#0891B2]/50 transition-all flex flex-col justify-center items-center text-center">
                 <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#0A0A0A] text-[#4ADE80] flex items-center justify-center shrink-0 mb-2 sm:mb-2.5">
                   <SlidersHorizontal className="w-4 h-4 sm:w-5 sm:h-5 text-[#4ADE80]" />
                 </div>
@@ -267,7 +281,7 @@ export default function App() {
               </div>
 
               {/* Benefício 3 */}
-              <div className="p-4 sm:p-5 lg:p-3 xl:p-4 bg-white rounded-2xl border border-[#0A0A0A]/15 shadow-sm hover:shadow-md hover:border-[#0891B2]/50 transition-all flex flex-col justify-center items-center text-center aspect-auto lg:aspect-square">
+              <div className="h-full p-4 sm:p-5 lg:p-3.5 xl:p-4 bg-white rounded-2xl border border-[#0A0A0A]/15 shadow-sm hover:shadow-md hover:border-[#0891B2]/50 transition-all flex flex-col justify-center items-center text-center">
                 <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#0A0A0A] text-[#00E5FF] flex items-center justify-center shrink-0 mb-2 sm:mb-2.5">
                   <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-[#00E5FF]" />
                 </div>
@@ -280,7 +294,7 @@ export default function App() {
               </div>
 
               {/* Benefício 4 */}
-              <div className="p-4 sm:p-5 lg:p-3 xl:p-4 bg-white rounded-2xl border border-[#0A0A0A]/15 shadow-sm hover:shadow-md hover:border-[#0891B2]/50 transition-all flex flex-col justify-center items-center text-center aspect-auto lg:aspect-square">
+              <div className="h-full p-4 sm:p-5 lg:p-3.5 xl:p-4 bg-white rounded-2xl border border-[#0A0A0A]/15 shadow-sm hover:shadow-md hover:border-[#0891B2]/50 transition-all flex flex-col justify-center items-center text-center">
                 <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#0A0A0A] text-[#4ADE80] flex items-center justify-center shrink-0 mb-2 sm:mb-2.5">
                   <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-[#4ADE80]" />
                 </div>
